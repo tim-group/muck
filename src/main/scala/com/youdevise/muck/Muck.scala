@@ -38,13 +38,17 @@ object Muck {
     (shelf, (shelf \\ slot))
   }
 
-  sealed class SlotAssigner[T](val slot: Slot[T]) {
+  sealed class ExtendedSlot[T](val slot: Slot[T]) {
     def :=(value: T): State[Shelf, T] = state[Shelf, T] { shelf: Shelf =>
       (shelf.set(slot, value), value)
     }
+
+    def or(value: T): State[Shelf, T] = state[Shelf, T] { shelf: Shelf =>
+      (shelf, (shelf \ slot).getOrElse(value))
+    }
   }
 
-  implicit def slot2Assigner[T](slot: Slot[T]): SlotAssigner[T] = new SlotAssigner(slot)
+  implicit def slot2Extended[T](slot: Slot[T]): ExtendedSlot[T] = new ExtendedSlot(slot)
 
   implicit def given(shelfStateMaker: ShelfStateMaker[Givens]): Given[Shelf] = new Given[Shelf] {
     def extract(text: String) = shelfStateMaker(text)(Shelf())._1
@@ -63,6 +67,12 @@ object Muck {
   }
 
   implicit def when2(shelfState: ShelfState[Whens]): When[(Shelf, Shelf), Shelf] = when2 { _: String => shelfState }
+
+  implicit def when3(shelfStateMaker: ShelfStateMaker[Whens]): When[(Shelf, Shelf, Shelf), Shelf] = new When[(Shelf, Shelf, Shelf), Shelf] {
+    def extract(shelves: (Shelf, Shelf, Shelf), text: String) = shelfStateMaker(text)(Shelf.combineAll(shelves.toIndexedSeq))._1
+  }
+
+  implicit def when3(shelfState: ShelfState[Whens]): When[(Shelf, Shelf, Shelf), Shelf] = when3 { _: String => shelfState }
 
   implicit def then(shelfStateMaker: ShelfStateMaker[ResultLike]): Then[Shelf] = new Then[Shelf] {
     def extract(shelf: Shelf, text: String): Result = shelfStateMaker(text)(shelf)._2.toResult

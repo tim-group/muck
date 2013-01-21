@@ -29,6 +29,15 @@ object SlotsSpec extends Specification {
       result must beEqualTo("Hello Monadic World")
     }
 
+    """be implicitly convertable into an optional reader""" in {
+      val optString = slot[String]
+      val reader = for {
+        value <- optString or "Where are my dragons?"
+      } yield value
+      val result = reader ! Shelf()
+      result must beEqualTo("Where are my dragons?")
+    }
+
     """take an assignment and return a slot writer""" in {
       val theString = slot[String]
       val reader = for {
