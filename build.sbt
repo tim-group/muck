@@ -9,7 +9,7 @@ libraryDependencies ++= Seq(
   //"org.scalaz" %% "scalaz-core" % "6.0.4",
   //"org.specs2" %% "specs2" % "1.13" % "test"
   "org.scalaz" % "scalaz-core_2.10" % "6.0.4",
-  "org.specs2" % "specs2_2.10" % "1.13" % "test"
+  "org.specs2" % "specs2_2.10" % "1.13"
 )
 
 libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-reflect" % _)
